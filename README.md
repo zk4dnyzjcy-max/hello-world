@@ -1,10 +1,10 @@
 # Hello World
 
-A simple project to demenstrate how to contribute to open source.
+A simple project to demonstrate how to contribute to open source.
 
 ## Getting Started
 
-Clone the repository and run the following comand:
+Clone the repository and run the following command:
 
 ```bash
 echo "Hello, World!"
@@ -12,4 +12,4 @@ echo "Hello, World!"
 
 ## Contributing
 
-Contributions are wellcome! Please open a pull request with your changes.
+Contributions are welcome! Please open a pull request with your changes.
