@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// A meal rotation plan, e.g. "Our 8 Week Rotation".
+// Access is capability-based via two unguessable tokens instead of user accounts:
+// editToken can edit the rotation + settings, shareToken is read-only + grocery collaboration.
+model MealPlan {
+  id         String   @id @default(cuid())
+  name       String
+  weeksCount Int
+  // ISO date (yyyy-mm-dd) the rotation begins on. Null until the owner picks a start day.
+  startDate  String?
+  editToken  String   @unique
+  shareToken String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  weeks         Week[]
+  skipPeriods   SkipPeriod[]
+  groceryChecks GroceryCheck[]
+}
+
+// One week (1..weeksCount) within the rotation template.
+model Week {
+  id         String @id @default(cuid())
+  mealPlanId String
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  weekNumber Int
+
+  slots MealSlot[]
+
+  @@unique([mealPlanId, weekNumber])
+}
+
+// A single day's meal within a rotation week. dayOfWeek: 0=Monday .. 6=Sunday.
+model MealSlot {
+  id        String @id @default(cuid())
+  weekId    String
+  week      Week   @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+
+  mealName  String?
+  recipeUrl String?
+  notes     String?
+
+  ingredients Ingredient[]
+
+  @@unique([weekId, dayOfWeek])
+}
+
+model Ingredient {
+  id         String   @id @default(cuid())
+  mealSlotId String
+  mealSlot   MealSlot @relation(fields: [mealSlotId], references: [id], onDelete: Cascade)
+  name       String
+  sortOrder  Int      @default(0)
+}
+
+// A date range (vacation, one-off date night, etc.) where no meal is cooked.
+// The rotation pointer simply doesn't advance for days inside this range, so
+// everything after it shifts forward instead of being skipped outright.
+model SkipPeriod {
+  id         String   @id @default(cuid())
+  mealPlanId String
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  startDate  String
+  endDate    String
+  reason     String?
+  createdAt  DateTime @default(now())
+}
+
+// Tracks which ingredients have been checked off for a given shopping week,
+// keyed by the Monday of that week + a normalized ingredient key, so the same
+// rotation template reused in a later cycle starts with a fresh, unchecked list.
+model GroceryCheck {
+  id            String   @id @default(cuid())
+  mealPlanId    String
+  mealPlan      MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  weekStartDate String
+  itemKey       String
+  checked       Boolean  @default(false)
+
+  @@unique([mealPlanId, weekStartDate, itemKey])
+}
