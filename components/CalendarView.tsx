@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { addISODays, formatDateLong, todayISO } from "@/lib/dates";
 import { CalendarEntryDTO } from "@/lib/types";
+import { readJson } from "@/lib/apiClient";
 
 const WINDOW_DAYS = 14;
 
@@ -15,11 +16,7 @@ export default function CalendarView({ planId, token }: { planId: string; token:
     let cancelled = false;
     const to = addISODays(anchor, WINDOW_DAYS - 1);
     fetch(`/api/plans/${planId}/calendar?token=${encodeURIComponent(token)}&from=${anchor}&to=${to}`)
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Could not load calendar.");
-        return data as CalendarEntryDTO[];
-      })
+      .then((res) => readJson<CalendarEntryDTO[]>(res))
       .then((data) => {
         if (!cancelled) {
           setEntries(data);

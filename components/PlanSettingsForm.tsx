@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { todayISO } from "@/lib/dates";
+import { readJson } from "@/lib/apiClient";
 
 interface Props {
   planId: string;
@@ -38,8 +39,7 @@ export default function PlanSettingsForm({ planId, token, name, weeksCount, star
           startDate: form.startDate || null,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not save.");
+      const data = await readJson<{ name: string; weeksCount: number; startDate: string | null }>(res);
       onSaved({ name: data.name, weeksCount: data.weeksCount, startDate: data.startDate });
       setSaved(true);
     } catch (err) {

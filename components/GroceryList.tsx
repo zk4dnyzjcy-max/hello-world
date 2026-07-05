@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { addISODays, formatDateLong, startOfWeek, todayISO } from "@/lib/dates";
 import { GroceryListDTO } from "@/lib/types";
+import { readJson } from "@/lib/apiClient";
 
 const POLL_MS = 5000;
 
@@ -20,8 +21,7 @@ export default function GroceryList({ planId, token }: { planId: string; token: 
         const res = await fetch(
           `/api/plans/${planId}/grocery?token=${encodeURIComponent(token)}&weekStart=${weekStart}`
         );
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Could not load grocery list.");
+        const data = await readJson<GroceryListDTO>(res);
         if (!cancelled) {
           setList(data);
           setError(null);

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { saveRecentPlan } from "@/lib/localPlans";
+import { readJson } from "@/lib/apiClient";
 
 export default function CreatePlanForm() {
   const router = useRouter();
@@ -21,8 +22,7 @@ export default function CreatePlanForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, weeksCount }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
+      const data = await readJson<{ id: string; editToken: string; shareToken: string }>(res);
       saveRecentPlan({
         id: data.id,
         name,

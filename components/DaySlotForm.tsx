@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MealSlotDTO } from "@/lib/types";
+import { readJson } from "@/lib/apiClient";
 
 interface Props {
   planId: string;
@@ -58,8 +59,7 @@ export default function DaySlotForm({ planId, token, weekNumber, slot, dayLabel,
           ingredients: form.ingredients.filter((s) => s.trim()),
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not save.");
+      const data = await readJson<MealSlotDTO>(res);
       onSaved(data);
       setSaved(true);
     } catch (err) {

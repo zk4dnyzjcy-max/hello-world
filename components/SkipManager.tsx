@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatDateLong, todayISO } from "@/lib/dates";
 import { SkipPeriodDTO } from "@/lib/types";
+import { readJson } from "@/lib/apiClient";
 
 interface Props {
   planId: string;
@@ -29,8 +30,7 @@ export default function SkipManager({ planId, token, skipPeriods, onChange }: Pr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, startDate, endDate, reason }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not add.");
+      const data = await readJson<SkipPeriodDTO>(res);
       onChange([...skipPeriods, data].sort((a, b) => a.startDate.localeCompare(b.startDate)));
       setReason("");
     } catch (err) {

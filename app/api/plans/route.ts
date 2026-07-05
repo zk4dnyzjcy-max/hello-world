@@ -17,26 +17,37 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const plan = await prisma.mealPlan.create({
-    data: {
-      name,
-      weeksCount,
-      editToken: generateToken(),
-      shareToken: generateToken(),
-      weeks: {
-        create: Array.from({ length: weeksCount }, (_, i) => ({
-          weekNumber: i + 1,
-          slots: {
-            create: Array.from({ length: 7 }, (_, dayOfWeek) => ({ dayOfWeek })),
-          },
-        })),
+  try {
+    const plan = await prisma.mealPlan.create({
+      data: {
+        name,
+        weeksCount,
+        editToken: generateToken(),
+        shareToken: generateToken(),
+        weeks: {
+          create: Array.from({ length: weeksCount }, (_, i) => ({
+            weekNumber: i + 1,
+            slots: {
+              create: Array.from({ length: 7 }, (_, dayOfWeek) => ({ dayOfWeek })),
+            },
+          })),
+        },
       },
-    },
-  });
+    });
 
-  return NextResponse.json({
-    id: plan.id,
-    editToken: plan.editToken,
-    shareToken: plan.shareToken,
-  });
+    return NextResponse.json({
+      id: plan.id,
+      editToken: plan.editToken,
+      shareToken: plan.shareToken,
+    });
+  } catch (err) {
+    console.error("Failed to create plan:", err);
+    return NextResponse.json(
+      {
+        error:
+          "Could not reach the database. Make sure DATABASE_URL is set for this deployment and the tables have been created.",
+      },
+      { status: 500 }
+    );
+  }
 }
